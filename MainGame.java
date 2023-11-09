@@ -1,6 +1,7 @@
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 
 import javax.swing.*;
 import java.awt.Graphics;
@@ -18,10 +19,11 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     }
 
     enum GS {
-        PLAYING,
         TITLE,
+        PLAYING,
         HIT,
-        DODGED
+        WIN,
+        END
     }
 
     GS gamestate = GS.PLAYING;
@@ -29,19 +31,20 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     DrawingPanel dp = new DrawingPanel();
     Rectangle person = new Rectangle(new Point(80, 80));
     Color personColor = Color.BLUE;
-    int laneChosen = 0;
-    int safe = 0;
+    int won = 0, trial = 0, laneChosen = 0, safe = 0;
     boolean driving = false;
     int[] standLocations = {217, 367, 517, 667};
     Timer t = new Timer(1, this);
     int carx = SCRW;
-    int hit = 0;
+    Font big = new Font("Monospaced", Font.BOLD, 150), small = new Font("Monospaced", Font.BOLD, 50);
+
     
 
 
     void setup() {
         this.add(dp);
         this.addKeyListener(this);
+        this.setTitle("Don't Die");
         
         this.pack();
         this.setLocationRelativeTo(null);
@@ -51,24 +54,42 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     }
 
     void drive() {
+        checkEnd();
         if(carx == 0) {
-            if(laneChosen != safe) hit();
-            else dodged();
-            
+            trial++;
             driving = false;
             carx = SCRW;
+            if(laneChosen != safe) gamestate = GS.HIT;
+            else win();
+            
         }
 
         if(driving) carx -= 10;
     }
 
-    void hit() {
-        hit++;
-        gamestate = GS.HIT;
+    void win() {
+       won++;
+       gamestate = GS.WIN;
     }
 
-    void dodged() {
-        gamestate = GS.DODGED;
+   
+
+    int getEarned() {
+        int earned = 0;
+
+        if(won == 0) earned = 0;
+        else if(won == 1) earned = 2;
+        else if(won == 2) earned = 4;
+        else earned = 10;
+
+        return earned;
+    }
+
+    void checkEnd() {
+        if(trial == 3) {
+            gamestate = GS.END;
+            return;
+        }
     }
 
     class DrawingPanel extends JPanel {
@@ -85,7 +106,11 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
             }
 
             
-            if(gamestate == GS.PLAYING || gamestate == GS.HIT || gamestate == GS.DODGED) {
+            if(gamestate == GS.PLAYING || gamestate == GS.HIT || gamestate == GS.WIN) {
+                g.setFont(big);
+                g.setColor(Color.black);
+                g.drawString("Pick a lane >:(", 50, 150);
+
                 for(int i = 0; i < 4; i++) {
                     g.setColor(Color.black);
                     g.fillRect(0, i*150+200, SCRW, 125);
@@ -103,25 +128,47 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
                 for(int i = 0; i < 4; i ++) {
                     if(driving && i != safe) {
-                        System.out.println("AJLKES");
                         g.setColor(Color.RED);
                         g.fillRect(carx, i*150+207, 150, 110);
                     }
                 }
             }
+
+            if(gamestate == GS.HIT || gamestate == GS.WIN) {
+                String outcome = "";
+                if(gamestate == GS.HIT) outcome = "YOU DIED";
+                else outcome = "YOU WON!";
+
+
+                g.fillRoundRect(100, 100, 1200, 600, 100, 100);
+                g.setColor(Color.black);
+                g.setFont(big);
+                g.drawString(outcome, 300,300);
+                g.setFont(small);
+                g.drawString("Trial " + trial, 300, 400);
+                g.drawString("Penny's accumulated: ", 300, 450);
+                g.setFont(big);
+                g.drawString("" + getEarned(), 300, 625);
+            }
             
+            if(gamestate == GS.END) {
+                g.setFont(big);
+                g.drawString("GAME OVER!", 300,350);
+                g.setFont(small);
+                g.drawString("Penny's accumulated: ", 300, 400);
+                g.setFont(big);
+                g.drawString("" + getEarned(), 300, 525);
+            }
         }
     }
 
 
     @Override
     public void keyTyped(KeyEvent e) {}
-    public void keyReleased(KeyEvent e) {
-        
-    }
+    public void keyReleased(KeyEvent e) {}
 
     public void keyPressed(KeyEvent e) {
-        if(gamestate == GS.PLAYING) {
+        if(gamestate == GS.PLAYING && !driving) {
             if(e.getKeyCode() == 'W') {
                 if(laneChosen > 0) {
                     laneChosen--;
@@ -136,10 +183,24 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
             if(e.getKeyCode() == ' ') {
                 safe = (int) (Math.random() * 4);
-                System.out.print(safe);
-
                 driving = true;
             }
+        }
+
+        if(gamestate == GS.WIN || gamestate == GS.HIT || gamestate == GS.TITLE) {
+            if(e.getKeyCode() == ' ') {
+                gamestate = GS.PLAYING;
+            }
+        }
+
+        if(gamestate == GS.END) {
+            if(e.getKeyCode() == ' ') {
+                trial = 0;
+                won = 0;
+                laneChosen = 0;
+                gamestate = GS.PLAYING;
+            }
+
         }
     }
 
@@ -147,7 +208,6 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         drive();
-        
         repaint();
     }
 
