@@ -43,6 +43,9 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     Timer t = new Timer(1, this);
     int carx = SCRW;
     Font big = new Font("Monospaced", Font.BOLD, 140), small = new Font("Monospaced", Font.BOLD, 50), smaller = new Font("Monospaced", Font.BOLD, 30), bigger = new Font("Monospaced", Font.BOLD, 300);
+    
+    String name = "";
+    String[] leaderboard = new String[5];
 
     
 
@@ -51,10 +54,8 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
         this.add(dp);
         this.addKeyListener(this);
         this.setTitle("Don't Die");
-        
         this.pack();
         this.setLocationRelativeTo(null);
-
         this.setVisible(true);
         t.start();
     }
@@ -98,6 +99,12 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
         }
     }
 
+    void getPlayerName() {
+        if(name == "") {
+            name = JOptionPane.showInputDialog("What your name? ");
+        }
+    }
+
     class DrawingPanel extends JPanel {
         DrawingPanel() {
             this.setPreferredSize(new Dimension(SCRW, SCRH));
@@ -110,6 +117,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
 
             if(gamestate == GS.TITLE) {
+
                 g2.setFont(big);
                 g2.drawString("Don't Die!!", 200, 150);
                 g2.setFont(smaller);
@@ -198,11 +206,14 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
             
             if(gamestate == GS.END) {
                 g2.setFont(big);
-                g2.drawString("GAME OVER!", 300,350);
+                g2.drawString("GAME OVER!", 300,150);
                 g2.setFont(smaller);
-                g2.drawString("Pennies accumulated: ", 300, 400);
+                g2.drawString("Pennies accumulated: ", 150, 400);
                 g2.setFont(big);
-                g2.drawString("" + getEarned(), 300, 525);
+                g2.drawString("" + getEarned(), 150, 525);
+                
+                g2.drawString("Leaderboard", 500, 400);
+                g2.drawString("0", 21, 123);
             }
         }
     }
@@ -244,6 +255,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                 won = 0;
                 laneChosen = 0;
                 gamestate = GS.TITLE;
+                name = "";
             }
 
         }
@@ -254,6 +266,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     public void actionPerformed(ActionEvent e) {
         drive();
         repaint();
+        getPlayerName();
     }
 
     
