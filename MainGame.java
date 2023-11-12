@@ -45,9 +45,10 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     Font big = new Font("Monospaced", Font.BOLD, 140), small = new Font("Monospaced", Font.BOLD, 50), smaller = new Font("Monospaced", Font.BOLD, 30), bigger = new Font("Monospaced", Font.BOLD, 300);
     
     String name = "";
-    String[] leaderboard = new String[5];
 
-    
+    Winner[] leaderboardWinners = {new Winner(), new Winner(), new Winner(), new Winner(), new Winner()};
+
+    boolean winner = false;
 
 
     void setup() {
@@ -68,7 +69,6 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
             carx = SCRW;
             if(laneChosen != safe) gamestate = GS.HIT;
             else win();
-            
         }
 
         if(driving) carx -= 10;
@@ -95,7 +95,28 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     void checkEnd() {
         if(trial == 3) {
             gamestate = GS.END;
+            updateLeaderboard();
+            t.stop();
             return;
+        }
+    }
+
+    void updateLeaderboard() {
+        Winner temp = new Winner();
+        for(int i = 0; i < leaderboardWinners.length; i++) {
+               
+            Winner w = leaderboardWinners[i];
+            if(getEarned() > w.getScore() && !winner) {
+                temp = leaderboardWinners[i];
+                leaderboardWinners[i] = new Winner(name, getEarned());
+                winner = true;
+                
+            }
+            else if(winner) {
+                leaderboardWinners[i] = temp;
+                temp = w;
+            }
+            
         }
     }
 
@@ -206,14 +227,22 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
             
             if(gamestate == GS.END) {
                 g2.setFont(big);
-                g2.drawString("GAME OVER!", 300,150);
-                g2.setFont(smaller);
-                g2.drawString("Pennies accumulated: ", 150, 400);
+                g2.drawString("GAME OVER!", 250,150);
+
+                g2.setFont(small);
+                g2.drawString("Pennies Earned: ", 150, 250);
                 g2.setFont(big);
-                g2.drawString("" + getEarned(), 150, 525);
+                g2.drawString("" + getEarned(), 150, 375);
                 
-                g2.drawString("Leaderboard", 500, 400);
-                g2.drawString("0", 21, 123);
+                g2.setFont(small);
+                g2.drawString("Leaderboard", 750, 250);
+
+                g2.setFont(smaller);
+                for(int i = 0; i < leaderboardWinners.length; i++) {
+                    g2.drawString("" + leaderboardWinners[i].getName(), 700, i*50+300);
+                    g2.drawString("" + leaderboardWinners[i].getScore() + " Pennies", 1000, i*50+300);
+
+                }
             }
         }
     }
@@ -256,6 +285,8 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                 laneChosen = 0;
                 gamestate = GS.TITLE;
                 name = "";
+                t.start();
+                winner = false;
             }
 
         }
