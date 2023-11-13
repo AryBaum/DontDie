@@ -235,8 +235,8 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                 g2.drawString("" + getEarned(), 150, 375);
                 
                 g2.setFont(small);
-                g2.drawString("Leaderboard", 750, 250);
-
+                g2.drawString("Leaderboar", 750, 250);
+                
                 g2.setFont(smaller);
                 for(int i = 0; i < leaderboardWinners.length; i++) {
                     g2.drawString("" + leaderboardWinners[i].getName(), 700, i*50+300);
