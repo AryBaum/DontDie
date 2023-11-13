@@ -47,6 +47,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     Color blue = new Color(167, 199, 231);
     Color darkBlue = new Color(61, 66, 107);
     Color darkPink = new Color(209, 148, 192);
+    Color green = new Color(182, 221, 123);
     int won = 0, trial = 0, laneChosen = 0, safe = 0;
     boolean driving = false;
     int[] standLocations = {217, 367, 517, 667};
@@ -55,7 +56,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     Font big = new Font("Monospaced", Font.BOLD, 140), small = new Font("Monospaced", Font.BOLD, 50), smaller = new Font("Monospaced", Font.BOLD, 30), bigger = new Font("Monospaced", Font.BOLD, 300);
    
     String name = "";
-    Image background;
+    Image background, winBackground;
 
 
     Winner[] leaderboardWinners = {new Winner(), new Winner(), new Winner(), new Winner(), new Winner()};
@@ -87,11 +88,13 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
         t.start();
 
         background = loadImage("background.png");
+        winBackground = loadImage("winbackground.png");
     }
 
 
     void drive() {
         checkEnd();
+
         if(carx == 0) {
             trial++;
             driving = false;
@@ -102,6 +105,14 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
 
         if(driving) carx -= 10;
+    }
+
+    void checkEnd() {
+        if(trial == 3) {
+            gamestate = GS.END;
+            updateLeaderboard();
+            t.stop();
+        }
     }
 
 
@@ -126,14 +137,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     }
 
 
-    void checkEnd() {
-        if(trial == 3) {
-            gamestate = GS.END;
-            updateLeaderboard();
-            t.stop();
-            return;
-        }
-    }
+    
 
 
     void updateLeaderboard() {
@@ -166,7 +170,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
     class DrawingPanel extends JPanel {
         DrawingPanel() {
             this.setPreferredSize(new Dimension(SCRW, SCRH));
-            this.setBackground(new Color(103, 191, 96));
+            this.setBackground(new Color(182,221,123));
         }
 
 
@@ -211,6 +215,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
            
             if(gamestate == GS.PLAYING || gamestate == GS.HIT || gamestate == GS.WIN) {
+                g2.setBackground(new Color(182,221,123));
                 g2.setFont(big);
                 g2.setColor(Color.white);
                 g2.drawString("Pick a lane >:(", 10, 150);
@@ -221,7 +226,7 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                     g2.fillRect(0, i*150+200, SCRW, 125);
 
 
-                    g2.setColor(Color.YELLOW);
+                    g2.setColor(Color.yellow);
                     g2.fillRect(100, i*150+257, 100, 10);
                     g2.fillRect(400, i*150+257, 100, 10);
                     g2.fillRect(700,i*150+257, 100, 10);
@@ -229,13 +234,13 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                    
                    
                 }
-                g2.setColor(pink);
+                g2.setColor(blue);
                 g2.fillOval(265, standLocations[laneChosen], person.x, person.y);
 
 
                 for(int i = 0; i < 4; i ++) {
                     if(driving && i != safe) {
-                        g2.setColor(blue);
+                        g2.setColor(new Color(248,162,30));
                         g2.fillRect(carx, i*150+207, 150, 110);
                     }
                 }
@@ -248,9 +253,9 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
                 else outcome = "YOU WON!";
 
 
-                g2.setColor(blue);
+                g2.setColor(new Color(0,0,0,190));
                 g2.fillRoundRect(100, 100, 1100, 600, 100, 100);
-                g2.setColor(darkBlue);
+                g2.setColor(Color.black);
                 g2.setStroke(new BasicStroke(5));
                 g2.drawRoundRect(100, 100, 1100, 600, 100, 100);
 
@@ -265,10 +270,10 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
 
 
                 g2.setFont(bigger);
-                g2.setColor(pink);
+                g2.setColor(new Color(182,221,123));
                 g2.drawString("" + getEarned(), 200, 610);
                 g2.fillRoundRect(700, 400, 400, 200, 100, 100);
-                g2.setColor(darkPink);
+                g2.setColor(new Color(182,221,123).darker());
                 g2.drawRoundRect(700, 400, 400, 200, 100, 100);
 
 
@@ -278,26 +283,43 @@ public class MainGame extends JFrame implements KeyListener, ActionListener {
             }
            
             if(gamestate == GS.END) {
-                g2.setFont(big);
-                g2.drawString("GAME OVER!", 250,150);
+                // g2.setFont(big);
+                // g2.setColor(blue);
+                // g2.drawString("GAME OVER!", 250,150);
 
+                g2.drawImage(winBackground, 0, 0, 1300, 800, null);
+
+
+                g2.setColor(new Color(0,0,0,190));
+                g2.fillRoundRect(110,240, 470, 70, 50, 50);
 
                 g2.setFont(small);
-                g2.drawString("Pennies Earned: ", 150, 250);
-                g2.setFont(big);
-                g2.drawString("" + getEarned(), 150, 375);
+                g2.setColor(Color.white);
+                g2.drawString("Pennies Earned: ", 120, 290);
+
+                g2.setFont(bigger);
+                g2.setColor(new Color(248,162,30));
+                g2.drawString("" + getEarned(), 255, 530);
                
                 g2.setFont(small);
-                g2.drawString("Leaderboard", 750, 250);
-
+                g2.setColor(new Color(0,0,0,190));
+                g2.fillRoundRect(680, 240, 500, 285, 100, 100);
+                g2.setColor(Color.white);
+                g2.drawString("Leaderboard", 750, 290);
 
                 g2.setFont(smaller);
                 for(int i = 0; i < leaderboardWinners.length; i++) {
-                    g2.drawString("" + leaderboardWinners[i].getName(), 700, i*50+300);
-                    g2.drawString("" + leaderboardWinners[i].getScore() + " Pennies", 1000, i*50+300);
-
-
+                    g2.drawString("" + leaderboardWinners[i].getName(), 700, i*40+340);
+                    g2.drawString("" + leaderboardWinners[i].getScore() + " Pennies", 1000, i*40+340);
                 }
+
+                // g2.setStroke(new BasicStroke(8));
+                // g2.setColor(pink);
+                // g2.fillRoundRect(150, 550, 950, 200, 100, 100);
+                // g2.setColor(darkPink);
+                // g2.drawRoundRect(150, 550, 950, 200, 100, 100);
+                // g2.setFont(big);
+                // g2.drawString("Play Again!", 185, 690);
             }
         }
     }
